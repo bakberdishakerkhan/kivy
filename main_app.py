@@ -9,9 +9,18 @@ from kivy.uix.windiw import Wimdow
 from kivy.uix.scrollview import ScrollView 
 from instruction import *
 from ruffier import test
+
+from seconds import Seconds
 age = 7
 name = ''
 p1, p2, p3 = 0, 0, 0
+def check_int(str_num):
+
+    try:
+        return int(strn)
+    except:
+        return False
+        ``
 class InstScr(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -35,9 +44,15 @@ class InstScr(Screen):
         outer.add_widget(self.btn)
         self.add_widget(outer)
     def next(self):
-        global name
         name = self.in_name.text
-        self.manager.current = 'pulsel'
+        age = check_int(self.in_age.text)
+        if age == False or age < 7:
+            age = 7
+            self.in_age.text = str(age)
+        else:
+            self.manager.current = 'pulsel'
+        
+
 class PulseScr(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -58,9 +73,18 @@ class PulseScr(Screen):
         outer.add_widget(self.btn)
         self.add_widget(outer)
     def next(self):
-        global p1
-        p1 = int(self.in_result.text)
-        self.manager.current = 'sits'
+        if not self.next_screen:
+            self.btn.set_disabled(True)
+            self.lbl_sec.start()
+        else:
+            global p1
+            p1 = check_int(self.in_result.text)
+            if p1 == False or p1 <= 0:
+                p1 = 0
+                self.in_result.text = str(p1)
+            else:
+                self.manager.current = 'sits'
+
 class CheckSits(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -95,6 +119,23 @@ class PulseScr2(Screen):
         outer.add_widget(line2)
         outer.add_widget(self.btn)
         self.add_widget(outer)
+
+    def sec_finished(self, *args):
+        if self.lbl_sec.done:
+            if self.stage == 0:
+                self.stage = 1
+                self.lbl1.text = 'Отдыхайте'
+                self.lbl_sec.restart(30)
+                self.in_result1.set_disabled(False)
+            else:
+                self.stage = 2
+                self.lbl1.text='Считайте пульс'
+                self.lbl_sec.restart(15)
+            elif self.stage == 2:
+                self.in_result2.set_disabled(False)
+                self.btn.set_disabled(False)
+                self.btn.text = 'Завершить'
+                self.next_screen = True
     def next(self):
         global p2, p3
         p2 = int(self.in_result1.text)
