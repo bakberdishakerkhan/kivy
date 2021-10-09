@@ -1,6 +1,7 @@
 # напиши модуль для реализации секундомера
 from kivy.clock import Clock
 from kivy.properties import BooleanProperty
+from kivy.uix.label import Label 
 
 
 class Seconds(Label):
