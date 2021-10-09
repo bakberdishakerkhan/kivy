@@ -44,7 +44,7 @@ txt_res.append('''
 
 def ruffier_index(P1, P2, P3):
     ''' возвращает значение индекса по трем показателям пульса для сверки с таблицей'''
-    return (4 * (P1, P2, P3) - 200) / 10
+    return (4 * (P1+P2+P3) - 200) / 10
 
 def neud_level(age):
     ''' варианты с возрастом меньше 7 и взрослым надо обрабатывать отдельно, 
@@ -78,7 +78,8 @@ def test(P1, P2, P3, age):
     if age < 7:
         return (txt_index + "0", txt_nodata)
     else:
-        ruffier_index = ruffier_index(P1, P2, P3)
-        result = txt_res[ruffier_result(ruffier_index, neud_level(age))]
-        res = txt_index + str(ruffier_index) + '\n' + txt_workheart + result
+        ruff_index = ruffier_index(P1, P2, P3)
+        result = txt_res[ruffier_result(ruff_index, neud_level(age))]
+        res = txt_index + str(ruff_index) + '\n' + txt_workheart + result
+        return res
 
