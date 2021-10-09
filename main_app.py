@@ -139,7 +139,7 @@ class PulseScr2(Screen):
                 self.lbl1.text = 'Отдыхайте'
                 self.lbl_sec.restart(30)
                 self.in_result1.set_disabled(False)
-            else:
+            elif self.stage == 1:
                 self.stage = 2
                 self.lbl1.text='Считайте пульс'
                 self.lbl_sec.restart(15)
