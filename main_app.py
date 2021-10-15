@@ -7,7 +7,7 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput 
 from kivy.core.window import Window 
 from kivy.uix.scrollview import ScrollView 
-from instructions import *
+from instruction import *
 from ruffier import test
 
 from seconds import Seconds
@@ -122,21 +122,48 @@ class CheckSits(Screen):
         
         instr = Label(text=txt_sits, size_hint=(0.5, 1))
         self.lbl_sits = Sits(30)
-        self.btn = Button(text='Продолжить', size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
-        self.btn.on_press = self.next
+        self.run = Runner(total=30, steptime=1.5, size_hint=(0.4,1))
+        self.run.bind(finished=self.run_finished)
+
+        line = BoxLayout()
+        vlay = BoxLayout(orientation='vertical', size_hint=(0.3,1))
+        vlay.add_widget(self.lbl_sits)
+        line.add_widget(instr)
+        line.add_widget(vlay)
+        line.add_widget(self.run)
+
+        self.btn = Button(text='Начать', size_hint=(0.3,0.2), pos_hint={'center_x': 0.5})
+        self.btn.background_color = btn_color
+        self.on_press = self.next
+
         outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
-        outer.add_widget(instr)
+        outer.add_widget(line)
         outer.add_widget(self.btn)
+
         self.add_widget(outer)
+
+    def run_finished(self, instance, value):
+        self.btn.set_disabled(False)
+        self.btn.text = 'Продолжить'
+        self.next_screen = True
+
     def next(self):
-        self.manager.current = 'pulse2'
+        if not self.next_screen:
+            self.btn.set_disabled(True)
+            self.run.start()
+            self.run.bind(value=self.lbl_sits.next)
+        else:
+            self.manager.current = 'pulse2'
+
 class PulseScr2(Screen):
     def __init__(self, **kwargs):
         self.next_screen = False
 
         self.stage = 0
         super().__init__(**kwargs)
+
         instr = Label(text=txt_test3)
+
         line1 = BoxLayout(size_hint=(0.8, None), height='30sp')
         self.lbl_sec = Seconds(15)
         self.lbl_sec.bind(done=self.sec_finished)
@@ -144,18 +171,24 @@ class PulseScr2(Screen):
 
         lbl_result1 = Label(text='Результат:', halign='right')
         self.in_result1 = TextInput(text='0', multiline=False)
+
         line1.add_widget(lbl_result1)
         line1.add_widget(self.in_result1)
+
         line2 = BoxLayout(size_hint=(0.8, None), height='30sp')
         lbl_result2 = Label(text='Результат после отдыха:', halign='right')
         self.in_result2 = TextInput(text='0', multiline=False)
 
         self.in_result1.set_disabled(True)
         self.in_result2.set_disabled(True)
+
         line2.add_widget(lbl_result2)
         line2.add_widget(self.in_result2)
-        self.btn = Button(text='Завершить', size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
+
+        self.btn = Button(text='Начать', size_hint=(0.3,0.5), pos_hint={'center_x': 0.5})
+        self.btn.background_color = btn_color
         self.btn.on_press = self.next
+
         outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
         outer.add_widget(instr)
         outer.add_widget(self.lbl1)
@@ -163,24 +196,24 @@ class PulseScr2(Screen):
         outer.add_widget(line1)
         outer.add_widget(line2)
         outer.add_widget(self.btn)
+
         self.add_widget(outer)
 
     def sec_finished(self, *args):
-        if self.lbl_sec.done:
-            if self.stage == 0:
-                self.stage = 1
-                self.lbl1.text = 'Отдыхайте'
-                self.lbl_sec.restart(30)
-                self.in_result1.set_disabled(False)
-            elif self.stage == 1:
-                self.stage = 2
-                self.lbl1.text='Считайте пульс'
-                self.lbl_sec.restart(15)
-            elif self.stage == 2:
-                self.in_result2.set_disabled(False)
-                self.btn.set_disabled(False)
-                self.btn.text = 'Завершить'
-                self.next_screen = True
+        if self.stage == 0:
+            self.stage = 1
+            self.lbl1.text = 'Отдыхайте'
+            self.lbl_sec.restart(30)
+            self.in_result1.set_disabled(False)
+        elif self.stage == 1:
+            self.stage = 2
+            self.lbl1.text='Считайте пульс'
+            self.lbl_sec.restart(15)
+        elif self.stage == 2:
+            self.in_result2.set_disabled(False)
+            self.btn.set_disabled(False)
+            self.btn.text = 'Завершить'
+            self.next_screen = True
     def next(self):
         if not self.next_screen:
             self.btn.set_disabled(True)
@@ -201,14 +234,18 @@ class PulseScr2(Screen):
 class Result(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         self.outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
         self.instr = Label(text='')
         self.outer.add_widget(self.instr)
+
         self.add_widget(self.outer)
         self.on_enter = self.before
+
     def before(self):
         global name
         self.instr.text = name + '\n' + test(p1, p2, p3, age)
+
 class HeartCheck(App):
     def build(self):
         sm = ScreenManager()
@@ -218,5 +255,6 @@ class HeartCheck(App):
         sm.add_widget(PulseScr2(name='pulse2'))
         sm.add_widget(Result(name='result'))
         return sm
+
 app = HeartCheck()
 app.run()
